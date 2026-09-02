@@ -50,6 +50,9 @@ KrPatch 의 옛 `pocketcore` 태그는 구버전 앱(v3.48 이하)이 새 APK �
 | svc | `SNKvsCAPCOM1` | | ffc | `RB_F_CONTACT` |
 | ss1 | `SAMURAI` | | ms1 | `METALSLUG1ST` |
 | lb | `LASTBLADE` | | ms2 | `METALSLUG2ND` |
-| lbj | 월화의 검사 특별편 (일본판) | `GEKKA` | — (미지원: UE 와 84% 다른 별개 빌드, 한패 불가 — 실측 2026-09-03. 앱은 v3.58 부터 인식해 「미지원」으로 표시) |
+| lbj | `GEKKA` ※미지원 | | | |
+
+※ lbj = 월화 **일본판**: UE 와 84% 다른 별개 빌드라 한패를 못 바른다 (실측 2026-09-03).
+앱 v3.58 부터 인식은 하되 카드에 「한글패치는 UE판 전용」으로 표시한다 — 조용한 부재 금지.
 
 (SAMURAI2 가 SAMURAI 보다 먼저 걸려야 한다 — 앞부분 일치 판정이라 순서가 중요.)
