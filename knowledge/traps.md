@@ -28,7 +28,7 @@
   고치면 다음 빌드가 되돌린다. 판올림은 스크립트 쪽 숫자를 고칠 것.
 - **ss2-sp-core 의 build/libretro.c 를 고치면 src/ss2sp.patch 를 재생성**해야 한다
   (build.sh 는 트리를 upstream 으로 리셋 후 패치를 다시 입힌다). 재생성은 upstream 을
-  얕게 받아 diff → 왕복 적용 검증까지 (regen_patch.sh).
+  얕게 받아 diff → 왕복 적용 검증까지 (레포의 tools/core/regen_patch.sh).
 - **빌드 직후 바로 회귀를 돌리면 낡은 .so 를 잡는다** — `sleep 2` (세 번 당함).
 - **릴리즈 자산을 크기로 비교해 교체를 건너뛰지 마라** — 번역만 바뀐 같은 크기 판을
   「같은 파일」로 넘긴 전력. 늘 지우고 다시 올려라.
