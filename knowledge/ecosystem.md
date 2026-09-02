@@ -26,12 +26,13 @@ KrPatch 의 옛 `pocketcore` 태그는 구버전 앱(v3.48 이하)이 새 APK �
  → news.json   → 소식 창
 ```
 
-색인 3종은 SP 방 스크립트가 만든다:
+색인 3종은 본부(구칭 SP 방) 스크립트가 만든다:
 - `pub_content.py` — 코어·팩 릴리즈 갱신 + cores.json 생성 + 소식 축적
 - `pub_pocketcore.py` — patches.json 생성(KrPatch 실태를 정규식으로 훑음) + 앱 업로드
   + 다리 갱신 + README 대문 2곳 + news.json 업로드
 
-**IPS 만 올리면 앱 반영은 색인 재배포 때** — SP 방에 「patches.json 재배포」 한 줄.
+**IPS 만 올리면 앱 반영은 색인 재배포 때** — 본부에 「patches.json 재배포」 한 줄.
+방 이름 체계(본부·한패공방·더빙실)는 [handover/README](../handover/README.md).
 자산 이름 규칙은 [RELEASE_RULES.md](https://github.com/rmdkdkr-png/KrPatch/blob/main/RELEASE_RULES.md).
 
 ## 대문 원칙
