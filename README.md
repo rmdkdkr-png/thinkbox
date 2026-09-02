@@ -11,8 +11,11 @@
 |---|---|
 | [knowledge/traps.md](knowledge/traps.md) | 재발 함정 모음 — 인코딩·WSL·PowerShell·빌드·안드로이드 |
 | [knowledge/methodology.md](knowledge/methodology.md) | 실측 방법론 — 판정 사다리, 투사체 원거리 규명, 검수법 |
+| [knowledge/input-mech.md](knowledge/input-mech.md) | 격투게임 입력 메커니즘 해부 — 게임 무관 공통 절차 (주소 찾기→잣대 반증→시험대→입력 규격) |
+| [knowledge/ram-map-svc.md](knowledge/ram-map-svc.md) | SVC 램 지도 — 엔진이 실사용 중인 오프셋 전표 + 게임 규칙 실측값 |
+| [knowledge/ram-map-ss2.md](knowledge/ram-map-ss2.md) | SS2 전투 램 — 액션 ID·체력·재는 법 (효과음/해설용) |
 | [knowledge/ecosystem.md](knowledge/ecosystem.md) | 레포 지도 — 무엇이 어디 살고 배포가 어떻게 도는지 |
-| [handover/](handover/) | 방별 인수인계 스냅샷 |
+| [handover/sp-room.md](handover/sp-room.md) | SP 방 스냅샷 — 산출물 지도 + 한 줄 요청 목록 |
 
 릴리즈 규칙(태그·자산 이름·판올림)은 원본이 KrPatch 에 있다:
 [RELEASE_RULES.md](https://github.com/rmdkdkr-png/KrPatch/blob/main/RELEASE_RULES.md)
