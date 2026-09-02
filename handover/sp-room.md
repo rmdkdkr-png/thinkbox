@@ -1,6 +1,6 @@
-# SP 방 스냅샷 (원버튼 엔진 · PocketCore 앱)
+# 본부 스냅샷 (구칭 SP 방 — 원버튼 엔진 · PocketCore 앱 · 배포 총괄)
 
-> 2026-09-02 기준. 상세는 각 링크의 원본이 진실이다.
+> 2026-09-02 기준. 상세는 각 링크의 원본이 진실이다. 방 이름 체계는 [README](README.md).
 
 ## 지금 상태
 
@@ -26,7 +26,7 @@
 | 패치 재생성기 | ss2-sp-core `tools/core/regen_patch.sh` — build/libretro.c 수정 후 필수 |
 | 웹 커맨드 조회표 | `~/ss2/ref/motm/커맨드_대조표.md` (+StrategyWiki 33건, 나무위키 사본) |
 
-## 다른 방이 SP 방에 시킬 수 있는 것 (한 줄 요청)
+## 다른 방이 본부에 시킬 수 있는 것 (한 줄 요청)
 
 - "patches.json 재배포" — 새 IPS 릴리즈를 앱 색인에 반영
 - "코어 재배포" — 코어 수정 후 core-svc/core-ss2 릴리즈 갱신
