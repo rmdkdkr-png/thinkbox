@@ -3,8 +3,14 @@
 각 방의 상세 HANDOVER 는 각자 레포에 산다. 여기에는 **요약 + 링크**만 둔다.
 형식: `handover/<방이름>.md`, 머리에 날짜.
 
-| 방 | 상세 위치 |
-|---|---|
-| SP 방 (원버튼·PocketCore) | ss2-sp-core `tools/svc/HANDOVER.md` |
-| SS2 더빙 방 | ss2-main (로컬) — 요약을 여기로 |
-| 한패 방(신작 이식) | ss2-sp-core `tools/svc/SP_PORTING.md` + KrPatch 릴리즈 본문 |
+## 방 이름 (2026-09-02 확정 — 유저 지정: 본부가 메인)
+
+| 방 이름 | 하는 일 | 상세 인수인계 |
+|---|---|---|
+| **본부** | PocketCore 앱 · SP 원버튼 엔진 · 배포/색인 총괄 (patches/cores/news/design.json, README 대문) | [sp-room.md](sp-room.md) · ss2-sp-core `tools/svc/HANDOVER.md` |
+| **한패공방** | 신작 한글패치 제작 (KOF R-2 · 메탈슬러그 · 아랑전설 …) + 계측 하네스(ngprun) | KrPatch 릴리즈 본문 · 자기 작업 폴더 |
+| **더빙실** | SS2 해설 · 음성팩 (재생 키 = 문장 해시) | ss2-main (로컬) — 요약을 여기로 |
+
+- 방끼리 부를 때 이 이름을 쓴다. 세션 간 메시지 첫 줄에 "본부에:", "한패공방에:" 식으로.
+- 본부에 시킬 수 있는 한 줄 요청 목록은 [sp-room.md](sp-room.md) 끝에 있다.
+- 새 방이 생기면 이 표에 한 줄 추가하고 이름을 정한다 (예정: KOF R-2 SP 이식 → **이식소**).
