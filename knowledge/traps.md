@@ -382,3 +382,21 @@
 
 - 결과 해시는 원본 덤프마다 다르다 ([!]/[a1] 세이브 플래시) — 「어느 덤프든 같은 결과」금지.
 - 검증은 반드시 깨끗한 원본으로 — 작업 폴더의 롬은 이미 패치본인 경우가 많다.
+
+## 안드로이드: 풀스크린 액티비티 위의 Dialog 가 패드 키를 못 받는다 (본부, 2026-09-04)
+
+PocketCore 런처(Theme.NoTitleBar.Fullscreen + immersive) 위에 `new Dialog(a)` 로 띄운 실행 전 선택창이
+에뮬에서 **윈도우 포커스를 못 받았다**(dumpsys window mCurrentFocus 가 계속 MainActivity). 터치는 되는데
+DPAD/버튼은 액티비티의 dispatchKeyEvent 로 간다 → 「확인을 눌렀는데 창이 또 열린다」.
+- 해결: 액티비티가 열려 있는 창(curSheet.isShowing())을 알고 키를 `sheet.handleKey(e)` 로 넘긴다. 창이 포커스를
+  받은 환경에선 Dialog 의 OnKeyListener 가 같은 함수를 부르므로 이중 처리는 없다(창 둘 중 하나만 키를 받는다).
+- 확인법: `adb shell dumpsys window | grep mCurrentFocus` 를 키 보내기 전후로.
+
+## 패드 버튼 의미는 KeyMap 기능으로만 — 날 KEYCODE_BUTTON_A/B 폴백을 두지 마라 (본부, 2026-09-04)
+
+KeyMap 기본표는 기능 `b`(펀치 자리=확인) → KEYCODE_BUTTON_B, 기능 `a`(킥 자리=취소) → KEYCODE_BUTTON_A. 그리고
+`KeyMap.isGamepad()` 는 BUTTON_* 코드면 **출처 무관** true 라 기능이 항상 계산된다. 여기에 「BUTTON_A=확인, BUTTON_B=취소」
+같은 날 코드 폴백을 얹으면 같은 버튼이 확인·취소 둘 다 참이 되어 if 순서로 결정된다(실측: 킥 버튼이 취소 대신 토글·시작).
+- 규칙: 기능이 있으면 기능만. 날 폴백은 기능이 없는 DPAD·ENTER·BACK·START 만. 배정 없는 패드 버튼은 삼킨다
+  (안 삼키면 시스템 폴백이 Y 를 BACK 으로 바꿔 앱이 꺼진다).
+- 에뮬 `adb shell input keyevent KEYCODE_BUTTON_B` = 확인, `KEYCODE_BUTTON_A` = 취소 로 검증.
