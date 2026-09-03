@@ -14,6 +14,7 @@
 | [knowledge/input-mech.md](knowledge/input-mech.md) | 격투게임 입력 메커니즘 해부 — 게임 무관 공통 절차 (주소 찾기→잣대 반증→시험대→입력 규격) |
 | [knowledge/ram-map-svc.md](knowledge/ram-map-svc.md) | SVC 램 지도 — 엔진이 실사용 중인 오프셋 전표 + 게임 규칙 실측값 |
 | [knowledge/ram-map-ss2.md](knowledge/ram-map-ss2.md) | SS2 전투 램 — 액션 ID·체력·재는 법 (효과음/해설용) |
+| [knowledge/frames-kofr2.md](knowledge/frames-kofr2.md) | KOF R-2 프레임 사양 — 전 캐릭터 실측표 + 조절 다이얼(대본 주소·WAIT 바이트) |
 | [knowledge/ecosystem.md](knowledge/ecosystem.md) | 레포 지도 — 무엇이 어디 살고 배포가 어떻게 도는지 |
 | [handover/sp-room.md](handover/sp-room.md) | SP 방 스냅샷 — 산출물 지도 + 한 줄 요청 목록 |
 
