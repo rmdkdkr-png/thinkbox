@@ -152,6 +152,12 @@
   → 검사가 **실제로 그 코드를 지나가는지** 먼저 확인하라. `NGP_OPTS="키=값,…"` 로 켠다.
   → 일반화: **켜야 도는 기능을 끈 채로 무회귀를 선언하지 마라.** 회귀 스크립트가
     옵션을 명시하지 않고 코어 초기값에 기대고 있다면 그것도 같은 함정 자리다.
+  → 본부 실사고(2026-09-04): `svcrun` 으로 SvC 엔진을 재던 env 가 `ngp_ss2sp=disabled` 였다.
+    SvC 의 `svcsp_frame()` 호출도 같은 `if (ss2sp_enable)` 안이라 **즉발 강키·착지 선입력·SP 트리거가
+    통째로 안 돌았고**, 「R1/X/Y 무반응」이 며칠 미해결로 남았다. SvC 실측 env 는
+    `ngp_ss2sp=enabled ngp_svcsp_engine=enabled`. 살아있는지 확인: `SVCSP_DEBUG=1` + 지상 B 한 번 →
+    `[land] g-edge …` 줄. 롬 게이트는 `SVCSP_ROMTHR=2 SVCSP_DEBUG=1` → `[svcsp] rom 문턱` 줄.
+    덤으로 svcrun 대본의 `!w` 는 **라벨 없으면 무시**된다 — 프로브 CSV 가 헤더만 남으면 이걸 의심.
 
 ## 안드로이드
 
