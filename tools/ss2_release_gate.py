@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """배포 후보 관문 — 본부 몫. 이식소 화면 검사와 별개로 롬만 보고 거는 것."""
-import io, os, struct, hashlib
+import io, os, sys, struct, hashlib
 
 R = os.path.expanduser('~/ss2/work_lang/v10/release_final/')
 BASE = R + 'ss2_v1.0_final.ngc'
-CAND = R + 'cards_v5.ngc'
+CAND = os.path.expanduser(sys.argv[1]) if len(sys.argv) > 1 else R + 'cards_v9_final.ngc'
 PRIS = os.path.expanduser("~/ss2/rom/pristine/Samurai Shodown! 2 (JUE) [!].ngc")
 
 a = io.open(BASE, 'rb').read()
