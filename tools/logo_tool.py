@@ -88,8 +88,13 @@ def parse_item(rom, a):
         if len(nxt) < 2*len(rows[0])+2 or nxt[2*len(rows[0]):2*len(rows[0])+2] != b"\xff\xff": break
     return dict(start=a, cnt=cnt, ptr=ptr, offs=offs, hdr=hdr, rows=rows, map_start=q, end=pos)
 
+def swap2(v):
+    # 2bpp 픽셀 값의 비트 쌍은 «낮은 비트가 먼저»다: 하드웨어 값 = bit(14-2x)<<1 | bit(15-2x).
+    # 값 0·3 은 대칭이라 글자(먹=1/3)만 다루던 도구들은 몰랐고, 팔레트 색 1·2 를 쓰는 로고에서 색이 뒤바뀌어 들통났다(월화 시제품).
+    return v   # 화면 실측(월화 bits.ngc): 워드 0x55AA → 왼쪽 4px = 색1, 오른쪽 = 색2. 즉 비트 쌍은 MSB 먼저, 교환 없음
+
 def tile_px(rom, off):
-    return [[(rom[off+2*y] | (rom[off+2*y+1] << 8)) >> (14 - 2*x) & 3 for x in range(8)] for y in range(8)]
+    return [[swap2((rom[off+2*y] | (rom[off+2*y+1] << 8)) >> (14 - 2*x) & 3) for x in range(8)] for y in range(8)]
 
 def extract(rom, P, out, scale):
     it = parse_item(rom, P["item"]); pals = palettes(rom, P.get("pal_tbl"), P); base = it["ptr"] - 0x200000
@@ -130,7 +135,7 @@ def build(rom, P, png, out_rom, grow):
             tb = bytearray()
             for y in range(8):
                 wv = 0
-                for x in range(8): wv |= idx[px[r*8+y][c*8+x]] << (14 - 2*x)
+                for x in range(8): wv |= swap2(idx[px[r*8+y][c*8+x]]) << (14 - 2*x)
                 tb += bytes([wv & 255, wv >> 8])
             tb = bytes(tb)
             if tb not in tile_of: tile_of[tb] = len(tiles); tiles.append(tb)
