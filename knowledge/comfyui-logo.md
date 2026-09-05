@@ -45,3 +45,11 @@ pkill -f 'ComfyUI/main.py'                            # 끄기
 - 결과: denoise 0.62(img2img)는 원본 라틴 글자가 남아 실패. **denoise 1.0 · ControlNet 1.0 · IP-Adapter 0.7** 이 정답 — 「월화의 검사」가 SNK 로고 질감(주황 그라데이션·감색 테·흰 하이라이트)으로 나온다. 0.85/0.5 도 됨. 시트 .
 - 부제 띠(「Beyond the Destiny」)는 모델이 가짜 라틴을 채운다 → 양자화 때 마스크로 원본 띠를 보존(quantize_logo --mask).
 - 다음: SS2 (참조 jp_logo 4×를 640×480 으로 레터박스, 힌트 「사무라이/쇼다운!」 두 줄, 「2」·칼·리본은 마스크 보존).
+
+## 2026-09-05 17:35 첫 검증 (월화 4장) — claude-eb
+- 모델 넷 다 내려옴(17:28). 공통 실행기 `/home/dudu/comfy/work/comfy_run.py <작업폴더> <참조.png> <획힌트.png> <접두사> [seed denoise cn ip 장수 프롬프트파일]`, 힌트 `work/hint_text.py <폴더> <참조4x> x0 y0 x1 y1 기울기 굵기 줄…`.
+- 시간: 첫 장 37s(모델 적재 포함), 그 뒤 **장당 16s** — 4장 65~85s. 생성은 병목이 아니다. 병목은 양자화·삽입·캡처(게임당 도구 손질).
+- 결과: denoise 0.62(img2img)는 원본 라틴 글자가 남아 실패. **denoise 1.0 · ControlNet 1.0 · IP-Adapter 0.7** 이 정답 — 「월화의 검사」가 SNK 로고 질감(주황 그라데이션·감색 테·흰 하이라이트)으로 나온다. 0.85/0.5 도 됨. 시트 `~/ss2/work_lang/v10/logo/eb/gen/`.
+- 부제 띠(「Beyond the Destiny」)는 모델이 가짜 라틴을 채운다 → 양자화 때 마스크로 원본 띠를 보존(quantize_logo --mask).
+- 참조가 4:3 이 아니면(SS2 160×88) 640×480 으로 레터박스해서 넣는다(그래프가 1024×768 로 맞추므로 비율이 일그러진다).
+- 그림 넣기 순서(본부 2026-09-05): SS2 로고 → SS2 붓글씨 배너(평면1 지도 + 문자RAM 타일, 자산 카드 knowledge/gfx-ss2/ASSET_CARDS.md) → 월화·메탈·카드·아랑·R-2·SvC.
