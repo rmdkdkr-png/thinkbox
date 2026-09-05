@@ -93,5 +93,23 @@ for i in range(120):
     if mx >= cnt: over.append((i + 1, mx, cnt))
 chk(not over, '행 색인이 cnt 를 넘는 카드 없음', '(%s)' % (over[:3] or '없음'))
 
+# ⑥ ★설명 글자 목록에 «안 쓰이는 슬롯»이 있나
+#    배포본은 120장 전부 «쓰는 글자만» 담아 안 쓰는 슬롯이 0 이다.
+#    남는 슬롯이 생겼다는 것은 «목록을 짠 글»과 «실제로 박은 글»이 다르다는 뜻이고,
+#    그러면 화면에는 «깨진 글자»가 아니라 «멀쩡한 다른 글자»가 떠서 깨짐 판정기에 안 걸린다.
+STRT, LISTT = 0x0319EB, 0x1EF5A0
+slack = []
+for i in range(120):
+    off = struct.unpack_from('<H', b, STRT + 2 * i)[0]
+    a0 = STRT + off; e0 = a0
+    while b[e0] != 0xFF: e0 += 1
+    lp = struct.unpack_from('<I', b, LISTT + 4 * i)[0] - 0x200000
+    n = b[lp]
+    used = set(c - 0x1A for c in b[a0:e0] if 0x1A <= c <= 0x87)
+    free = [k for k in range(n) if k not in used]
+    if free: slack.append((i + 1, len(free)))
+chk(not slack, '설명 글자 목록에 안 쓰는 슬롯 없음',
+    '(있는 카드 %s)' % (['%d장:%d' % (c, k) for c, k in slack[:8]] or '없음'))
+
 print('-' * 66)
 print('관문 %s' % ('합격 — 화면 검사로 넘겨도 된다' if ok else '★불합격 — 굽기 전에 고쳐라'))
