@@ -16,6 +16,7 @@
     ★명판넘침      제목 좌·우 여백 2 px 미만
     ★줄수초과      설명 13줄 이상(14줄이 한도, 15줄째가 No·별 줄 침범)
     ★뭉친칸        한 칸이 70% 넘게 차 있다 = 깨진 타일 의심(정상 한글은 25~45%)
+    ★칸수차        글 표와 맞댄 잔차가 -8~+6 밖(줄 하나가 통째로 빠지면 여기 걸린다)
     설명글자칸     잉크가 있는 8 px 칸 수 — «빠진 글자»는 화면만으로 못 잡는다.
                    이 수를 1-f7 의 글자 수와 번호로 맞대는 것이 진짜 검사다
     △치우침        제목 좌우 여백 차 12 px 이상(가운데 정렬 확인용)
@@ -30,6 +31,10 @@ TY0, TY1, TX0, TX1 = 9, 23, 38, 123          # 제목 명판 안쪽
 BY0, BY1, BX0, BX1 = 24, 132, 36, 124        # 설명 글 상자 안쪽
 PITCH = 8                                     # 줄 간격(실측)
 LIMIT_LINES = 14                              # 15줄째가 No·별 줄을 침범한다
+CENSUS = os.environ.get("CARDS_CENSUS",
+    os.path.expanduser("~/ss2/work_lang/v10/review/census/cards_counts_for_audit.tsv"))
+RESID_LO, RESID_HI = -8, 6                    # 멀쩡한 롬에서 잰 잔차 폭(-5~+3)에 여유를 준 값
+
 
 
 def rd(fn):
@@ -142,13 +147,25 @@ def shoot(rom, shots):
         print("  줄 %2d (%3d~%3d) 찍음" % (r, a, b), flush=True)
 
 
+def load_census():
+    """글 담당 표(번호·총코드·글자·공백·줄바꿈·아이콘·줄수)를 읽는다. 없으면 빈 채로 간다."""
+    if not os.path.exists(CENSUS): return {}
+    c = {}
+    for l in io.open(CENSUS, encoding="utf-8").read().splitlines()[1:]:
+        p = l.split("\t")
+        if len(p) < 7: continue
+        c[int(p[0])] = dict(ch=int(p[2]), sp=int(p[3]), nl=int(p[4]), ic=int(p[5]))
+    return c
+
+
 def audit(shots, name):
     out = os.path.join(OUTROOT, name); os.makedirs(out, exist_ok=True)
+    cen = load_census()
     rows = []; flagged = []
     for n in range(1, 121):
         f = "%s/d%03d.png" % (shots, n)
         if not os.path.exists(f):
-            rows.append((n, 0, 0, 0, 0, 0, 0, 0, 0, "★없음(못 찍음)")); flagged.append(n); continue
+            rows.append((n, 0, 0, 0, 0, 0, 0, 0, "", "", 0, "★없음(못 찍음)")); flagged.append(n); continue
         px = rd(f); t = title(px); b = body(px)
         tags = []
         if t["w"] == 0: tags.append("★제목없음")
@@ -156,18 +173,24 @@ def audit(shots, name):
         if t["w"] and (t["l"] < 2 or t["r"] < 2): tags.append("★명판넘침")
         if b["lines"] > LIMIT_LINES - 1: tags.append("★줄수초과")
         if b["dense"]: tags.append("★뭉친칸%d" % len(b["dense"]))
+        exp = resid = ""
+        if n in cen:
+            # 화면 칸 수 ≈ 글자 + 아이콘 + 줄수 (멀쩡한 롬에서 잰 관계, 잔차 -5~+3)
+            exp = cen[n]["ch"] + cen[n]["ic"] + b["lines"]
+            resid = b["cells"] - exp
+            if resid < RESID_LO or resid > RESID_HI: tags.append("★칸수차%+d" % resid)
 
         if t["w"] and abs(t["l"] - t["r"]) >= 12: tags.append("△치우침%+d" % (t["r"] - t["l"]))
         v = "·" if not tags else " ".join(tags)
-        rows.append((n, t["w"], t["l"], t["r"], abs(t["l"] - t["r"]), b["lines"], b["wmax"], b["cells"], len(b["dense"]), v))
+        rows.append((n, t["w"], t["l"], t["r"], abs(t["l"] - t["r"]), b["lines"], b["wmax"], b["cells"], exp, resid, len(b["dense"]), v))
         if any(x.startswith("★") for x in tags): flagged.append(n)
     with io.open("%s/cards_audit.tsv" % out, "w", encoding="utf-8", newline="\n") as f:
-        f.write("번호\t제목폭px\t제목좌여백\t제목우여백\t좌우차\t설명줄수\t설명최장폭px\t설명글자칸\t뭉친칸\t판정\n")
+        f.write("번호\t제목폭px\t제목좌여백\t제목우여백\t좌우차\t설명줄수\t설명최장폭px\t설명글자칸\t기대칸\t차이\t뭉친칸\t판정\n")
         for r in rows: f.write("\t".join(str(x) for x in r) + "\n")
     if flagged:
         sheet([rd("%s/d%03d.png" % (shots, n)) for n in flagged if os.path.exists("%s/d%03d.png" % (shots, n))],
               "%s/review.png" % out)
-    bad = [r for r in rows if r[9] != "·"]
+    bad = [r for r in rows if r[11] != "·"]
     ln = {}
     for r in rows: ln[r[5]] = ln.get(r[5], 0) + 1
     L = ["# 카드 전수 검증 — %s" % name, "",
@@ -177,17 +200,20 @@ def audit(shots, name):
          "| 제목 여백 최소 | 좌 %d px · 우 %d px |" % (min(r[2] for r in rows), min(r[3] for r in rows)),
          "| 설명 줄 수 | " + " · ".join("%d줄 %d장" % (k, v) for k, v in sorted(ln.items())) + " |",
          "| 설명 최장 폭 | %d px |" % max(r[6] for r in rows),
-         "| 설명 글자 칸 합계 | %d칸 (1-f7 글자 수와 번호로 맞댈 것) |" % sum(r[7] for r in rows),
+         "| 설명 글자 칸 합계 | %d칸 |" % sum(r[7] for r in rows),
+         ("| 글 표와 맞댄 잔차 | %s |" % (" · ".join("%+d: %d장" % (k, v) for k, v in sorted(
+             __import__("collections").Counter(r[9] for r in rows if r[9] != "").items()))
+             or "글 표 없음")),
          "| 제목 좌우 여백 차 최대 | %d px |" % max(r[4] for r in rows),
-         "| ★ 걸린 카드 | %d장 |" % len([r for r in rows if "★" in r[9]]),
-         "| △ 확인 권고 | %d장 |" % len([r for r in rows if "△" in r[9] and "★" not in r[9]]), ""]
+         "| ★ 걸린 카드 | %d장 |" % len([r for r in rows if "★" in r[11]]),
+         "| △ 확인 권고 | %d장 |" % len([r for r in rows if "△" in r[11] and "★" not in r[11]]), ""]
     if bad:
-        L += ["## 걸린 카드", "", "| 번호 | 판정 |", "|---|---|"] + ["| %d | %s |" % (r[0], r[9]) for r in bad]
+        L += ["## 걸린 카드", "", "| 번호 | 판정 |", "|---|---|"] + ["| %d | %s |" % (r[0], r[11]) for r in bad]
     else:
         L += ["**걸린 카드 없음.**"]
     io.open("%s/SUMMARY.md" % out, "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
-    print("★%d장 · △%d장 · 표와 요약: %s" % (len([r for r in rows if "★" in r[9]]),
-                                            len([r for r in rows if "△" in r[9] and "★" not in r[9]]), out))
+    print("★%d장 · △%d장 · 표와 요약: %s" % (len([r for r in rows if "★" in r[11]]),
+                                            len([r for r in rows if "△" in r[11] and "★" not in r[11]]), out))
     return rows
 
 
