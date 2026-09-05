@@ -138,8 +138,23 @@ def build(rom, P, png, out_rom, grow):
                 for x in range(8): wv |= swap2(idx[px[r*8+y][c*8+x]]) << (14 - 2*x)
                 tb += bytes([wv & 255, wv >> 8])
             tb = bytes(tb)
-            if tb not in tile_of: tile_of[tb] = len(tiles); tiles.append(tb)
-            row.append((tile_of[tb], (cand - pb0) * 2))
+            # 같은 타일이면 재사용, 좌우/상하 반전으로 같아지면 반전 비트(7/6)로 재사용 — 원본이 그렇게 아낀다
+            vals = [[idx[px[r*8+y][c*8+x]] for x in range(8)] for y in range(8)]
+            def pack(v):
+                o = bytearray()
+                for yy in range(8):
+                    wv = 0
+                    for xx in range(8): wv |= swap2(v[yy][xx]) << (14 - 2*xx)
+                    o += bytes([wv & 255, wv >> 8])
+                return bytes(o)
+            flag = 0
+            if tb not in tile_of:
+                hf = pack([rr[::-1] for rr in vals]); vf = pack(vals[::-1]); hv = pack([rr[::-1] for rr in vals[::-1]])
+                if hf in tile_of: tb, flag = hf, 0x80
+                elif vf in tile_of: tb, flag = vf, 0x40
+                elif hv in tile_of: tb, flag = hv, 0xC0
+                else: tile_of[tb] = len(tiles); tiles.append(tb)
+            row.append((tile_of[tb], (cand - pb0) * 2 | flag))
         rows.append(row)
     if errs: print("\n".join(errs)); raise SystemExit("✗ PNG 가 규칙을 어긴다 — 위 칸을 고쳐라 (합치지 않는다)")
     n = len(tiles); print("고유 타일 %d (칸 %d)" % (n, sum(len(r) for r in rows)))
@@ -148,15 +163,26 @@ def build(rom, P, png, out_rom, grow):
     if n > cnt:
         if grow and n <= grow: cnt = n
         else: raise SystemExit("✗ 타일 %d > cnt %d. grow_cnt 로 키워라(아이템 뒤 자리를 먹는다)" % (n, cnt))
-    bank = P.get("bank", it["ptr"] - 0x200000); bank_end = P.get("bank_end", bank + 16*n)
-    if bank + 16*n > bank_end: raise SystemExit("✗ 타일 뱅크 %d B 초과" % (bank_end - bank))
-    rec = bytes([cnt & 255, cnt >> 8]) + it["ptr"].to_bytes(4, "little") + b"".join((bank - (it["ptr"] - 0x200000) + 16*i).to_bytes(2, "little") for i in range(n)) + b"\x00" * (2*(cnt-n)) + bytes([it["hdr"]])
+    bank = P.get("bank", it["ptr"] - 0x200000); bank_end = P.get("bank_end", bank + 16*n); pbase = it["ptr"] - 0x200000
+    # 전부 투명한 타일은 새로 쓰지 않고 뱅크(형제 아이템 공용 구간 포함)에 이미 있는 빈 타일을 가리킨다 — 원본이 그렇게 아낀다
+    # ⚠ 공유 빈 타일은 «오프셋 0(ptr 자리)»에 있을 때만 쓴다. 다른 오프셋의 빈 타일을 가리키게 하면 화면이 깨졌다(SS2 rt4: 145칸) —
+    #   적재기가 offs[0] 를 특별히 보는 듯. 새 타일은 그 빈 타일을 건너뛰고 놓는다.
+    blank = b"\x00" * 16; shared_blank = pbase if rom[pbase:pbase+16] == blank else None
+    slots = [off for off in range(bank, bank_end, 16) if off != shared_blank]
+    place = []; k = 0
+    for tb in tiles:
+        if tb == blank and shared_blank is not None: place.append(shared_blank)
+        else:
+            if k >= len(slots): raise SystemExit("✗ 타일 뱅크 %d B 초과(새 타일 %d장)" % (bank_end - bank, k + 1))
+            place.append(slots[k]); k += 1
+    rec = bytes([cnt & 255, cnt >> 8]) + it["ptr"].to_bytes(4, "little") + b"".join((place[i] - pbase).to_bytes(2, "little") for i in range(n)) + b"\x00" * (2*(cnt-n)) + bytes([it["hdr"]])
     for row in rows: rec += b"".join(bytes(tp) for tp in row) + b"\xff\xff"
     d = bytearray(rom)
     limit = it["end"] if not grow else P.get("grow_limit", it["end"] + 2*(grow - it["cnt"]))
     assert P["item"] + len(rec) <= limit, "아이템 %d B 가 자리 %d B 를 넘는다" % (len(rec), limit - P["item"])
     d[P["item"]:P["item"]+len(rec)] = rec
-    for i, tb in enumerate(tiles): d[bank+16*i:bank+16*i+16] = tb
+    for i, tb in enumerate(tiles):
+        if not (tb == blank and shared_blank is not None): d[place[i]:place[i]+16] = tb
     open(out_rom, "wb").write(bytes(d))
     print("build → %s: 아이템 %06X cnt %d(%d 사용) %d B, 타일 %06X..%06X" % (out_rom, P["item"], cnt, n, len(rec), bank, bank+16*n))
 
