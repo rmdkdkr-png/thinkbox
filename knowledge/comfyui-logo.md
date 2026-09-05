@@ -38,3 +38,10 @@ pkill -f 'ComfyUI/main.py'                            # 끄기
 - WSL 파이썬 3.14 로는 torch 휠이 없다 — venv 는 3.12.
 - 첫 실행 때 `IPAdapterUnifiedLoader` 가 clip_vision 파일 이름을 못 찾으면 `models/clip_vision/` 이름을 `CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors` 로 맞춘다(그 이름으로 받아 두었다).
 - 12GB 라 SDXL 1024×768 + ControlNet + IP-Adapter 는 넉넉하지만, FLUX 는 fp8 경계.
+
+## 2026-09-05 17:35 첫 검증 (월화 4장) — claude-eb
+- 모델 넷 다 내려옴(17:28). 공통 실행기 , 힌트 .
+- 시간: 첫 장 37s(모델 적재 포함), 그 뒤 **장당 16s** — 4장 65~85s. 생성은 병목이 아니다. 병목은 양자화·삽입·캡처(게임당 도구 손질).
+- 결과: denoise 0.62(img2img)는 원본 라틴 글자가 남아 실패. **denoise 1.0 · ControlNet 1.0 · IP-Adapter 0.7** 이 정답 — 「월화의 검사」가 SNK 로고 질감(주황 그라데이션·감색 테·흰 하이라이트)으로 나온다. 0.85/0.5 도 됨. 시트 .
+- 부제 띠(「Beyond the Destiny」)는 모델이 가짜 라틴을 채운다 → 양자화 때 마스크로 원본 띠를 보존(quantize_logo --mask).
+- 다음: SS2 (참조 jp_logo 4×를 640×480 으로 레터박스, 힌트 「사무라이/쇼다운!」 두 줄, 「2」·칼·리본은 마스크 보존).
