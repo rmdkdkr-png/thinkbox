@@ -15,6 +15,7 @@
     ★설명없음      설명 줄 0
     ★글자칸넘침    제목 잉크가 글자 칸(x 40~119, 80 px) 밖으로 나갔다
     △빠듯          좌·우 여백이 0 px — 더 못 늘린다
+    △안전선초과    화면 폭이 77 px 를 넘었다(칸 80 안에는 들지만 그림자까지 치면 빠듯하다)
     ★줄수초과      설명 13줄 이상(14줄이 한도, 15줄째가 No·별 줄 침범)
     ★뭉친칸        한 칸이 70% 넘게 차 있다 = 깨진 타일 의심(정상 한글은 25~45%)
     ★칸수차        글 표와 맞댄 잔차가 -8~+6 밖(줄 하나가 통째로 빠지면 여기 걸린다)
@@ -32,6 +33,7 @@ ALLCARDS = os.path.expanduser("~/ss2/tmp/cards/ss2_allcards.ngc")
 BASE = os.path.expanduser("~/ss2/work_lang/v10/release_final/ss2_v1.0_final.ngc")
 TY0, TY1, TX0, TX1 = 9, 23, 38, 123          # 제목을 훑는 범위(명판 안쪽 — 테두리는 빼야 한다)
 GX0, GX1 = 40, 119                            # 글자가 그려지는 칸 10개 = 80 px
+SAFE_W = 77                                   # 안전선(화면 폭). 글 담당 표의 76 은 그림자를 뺀 값이다
 BY0, BY1, BX0, BX1 = 24, 132, 36, 124        # 설명 글 상자 안쪽
 PITCH = 8                                     # 줄 간격(실측)
 LIMIT_LINES = 14                              # 15줄째가 No·별 줄을 침범한다
@@ -213,6 +215,7 @@ def audit(shots, name):
         if b["lines"] == 0: tags.append("★설명없음")
         if t["w"] and t["over"]: tags.append("★글자칸넘침")
         elif t["w"] and (t["l"] < 1 or t["r"] < 1): tags.append("△빠듯")
+        elif t["w"] > SAFE_W: tags.append("△안전선초과%d" % t["w"])
         if b["lines"] > LIMIT_LINES - 1: tags.append("★줄수초과")
         if b["dense"]: tags.append("★뭉친칸%d" % len(b["dense"]))
         ar = find_arrows(px, T) if T else []
@@ -240,7 +243,7 @@ def audit(shots, name):
     L = ["# 카드 전수 검증 — %s" % name, "",
          "찍은 것 %d장 · 표 `cards_audit.tsv` · 사람이 볼 카드 %d장 `review.png`" % (len(rows), len(flagged)), "",
          "| 항목 | 값 |", "|---|---|",
-         "| 제목 폭 최대 | %d px (글자 칸 80 px · 안전선 78) |" % max(r[1] for r in rows),
+         "| 제목 폭 최대 | %d px (글자 칸 80 px · 안전선 77) |" % max(r[1] for r in rows),
          "| 제목 여백 최소 | 좌 %d px · 우 %d px |" % (min(r[2] for r in rows), min(r[3] for r in rows)),
          "| 설명 줄 수 | " + " · ".join("%d줄 %d장" % (k, v) for k, v in sorted(ln.items())) + " |",
          "| 설명 최장 폭 | %d px |" % max(r[6] for r in rows),
