@@ -48,7 +48,7 @@ SS2 타이틀 로고(순정 0x0837B3)와 월화(UE) 타이틀 로고(0x088200)�
 프로파일(JSON, 게임마다 하나):
 
     {"item":"0837B3", "bank":"083DC9", "bank_end":"084DE9", "pal_tbl":"059188", "pal_base":4, "tile_base":128, "grow_limit":"083DC9"}
-    {"item":"088200", "bank":"089A50", "bank_end":"08A7D0", "pal_dump":".../lbt.pal", "pal_dump_off":"80", "pal_base":0, "tile_base":16}
+    {"item":"088200", "bank":"089E60", "bank_end":"08A7D0", "pal_dump":".../lbt.pal", "pal_dump_off":"80", "pal_base":0, "tile_base":16}
 
     python3 logo_tool.py extract <롬> <프로파일> <out.png> [배율]     → 원본 PNG(팔레트 색 그대로)
     python3 logo_tool.py build   <롬> <프로파일> <in.png> <출력롬> [grow_cnt]
