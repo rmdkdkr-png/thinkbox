@@ -21,9 +21,16 @@ print('-' * 66)
 
 chk(len(b) == 2097152, '길이 2,097,152 B', '(%d)' % len(b))
 
-# ① 세이브 구역을 안 건드렸나 (SS2 는 0x1F0200~)
-n = sum(1 for i in range(0x1F0200, 0x200000) if a[i] != b[i])
-chk(n == 0, '세이브 구역 0x1F0200~ 무손상', '(바뀐 바이트 %d)' % n)
+# ① 세이브 구역 — 기본판은 0 B, 올카드판은 «정해진 72 B 만» 이어야 한다
+SAVE_OK = ((0x1F0300, 0x1F0358), (0x1F03E6, 0x1F0400))   # 올카드가 바꾸는 자리(카드 소유 표시)
+diff = [i for i in range(0x1F0200, 0x200000) if a[i] != b[i]]
+if 'allcards' in os.path.basename(CAND):
+    outside = [i for i in diff if not any(lo <= i < hi for lo, hi in SAVE_OK)]
+    chk(not outside and len(diff) == 72,
+        '올카드판 — 세이브 구역이 정해진 72 B 만 다름',
+        '(바뀐 %d B · 범위 밖 %d B)' % (len(diff), len(outside)))
+else:
+    chk(not diff, '세이브 구역 0x1F0200~ 무손상', '(바뀐 바이트 %d)' % len(diff))
 
 # ② 제목 기록 시작 주소 120개가 배포본과 같은가 (오늘 번 불변식)
 def starts(d):
