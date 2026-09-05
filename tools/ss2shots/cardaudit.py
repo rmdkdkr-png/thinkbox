@@ -18,6 +18,8 @@
     ★줄수초과      설명 13줄 이상(14줄이 한도, 15줄째가 No·별 줄 침범)
     ★뭉친칸        한 칸이 70% 넘게 차 있다 = 깨진 타일 의심(정상 한글은 25~45%)
     ★칸수차        글 표와 맞댄 잔차가 -8~+6 밖(줄 하나가 통째로 빠지면 여기 걸린다)
+    ★화살표오배치  커맨드 화살표(→ ↓ ← ↗)가 커맨드 줄 자리(x 48·49·56·57·64·65·73) 밖에 박혔다
+                   = 숫자 자리에 화살표가 들어간 것(22번 ↓ · 66번 ↗ 이 그것이다)
     설명글자칸     잉크가 있는 8 px 칸 수 — «빠진 글자»는 화면만으로 못 잡는다.
                    이 수를 1-f7 의 글자 수와 번호로 맞대는 것이 진짜 검사다
     △치우침        제목 좌우 여백 차 12 px 이상(가운데 정렬 확인용)
@@ -36,6 +38,8 @@ LIMIT_LINES = 14                              # 15줄째가 No·별 줄을 침�
 CENSUS = os.environ.get("CARDS_CENSUS",
     os.path.expanduser("~/ss2/work_lang/v10/review/census/cards_counts_for_audit.tsv"))
 RESID_LO, RESID_HI = -8, 6                    # 멀쩡한 롬에서 잰 잔차 폭(-5~+3)에 여유를 준 값
+ARROWS = os.path.join(HERE, "arrows.json")    # 커맨드 화살표 글리프 본(→ ↓ ← ↗)
+COMMAND_X = {48, 49, 56, 57, 64, 65, 73}      # 커맨드 줄은 화살표를 늘 이 자리에 놓는다
 
 
 
@@ -105,6 +109,39 @@ def body(px):
     return dict(lines=lines, wmax=wmax, cells=cells, dense=dense)
 
 
+def load_arrows():
+    if not os.path.exists(ARROWS): return {}
+    import json
+    return json.load(io.open(ARROWS, encoding="utf-8"))
+
+
+def line_cells(px, y):
+    """그 줄(8 px)에 잉크가 있는 칸 수 — 커맨드 줄은 짧고(≤8), 문장 줄은 길다."""
+    cols = sorted({x for yy in range(y, min(y + PITCH, BY1))
+                   for x in range(BX0, BX1) if lum(px, yy, x) > 150})
+    if not cols: return 0
+    org = cols[0]
+    return len({(x - org) // 8 for x in cols})
+
+
+def find_arrows(px, T):
+    """화살표 글리프를 찾는다. **커맨드 줄 자리 밖**이거나 **9칸 이상인 줄**이면 문장에 잘못 박힌 것이다."""
+    bad = []
+    for k, t in T.items():
+        h = len(t); w = len(t[0])
+        for y in range(BY0, BY1 - h):
+            for x in range(BX0, BX1 - w):
+                ok = True
+                for j in range(h):
+                    row = t[j]
+                    for i in range(w):
+                        if (lum(px, y + j, x + i) > 150) != (row[i] == "#"): ok = False; break
+                    if not ok: break
+                if not ok: continue
+                if x not in COMMAND_X or line_cells(px, y) >= 9: bad.append((k, y, x))
+    return bad
+
+
 def png(px, fn, s=1):
     out = bytearray()
     for y in range(152):
@@ -164,7 +201,7 @@ def load_census():
 
 def audit(shots, name):
     out = os.path.join(OUTROOT, name); os.makedirs(out, exist_ok=True)
-    cen = load_census()
+    cen = load_census(); T = load_arrows()
     rows = []; flagged = []
     for n in range(1, 121):
         f = "%s/d%03d.png" % (shots, n)
@@ -178,6 +215,8 @@ def audit(shots, name):
         elif t["w"] and (t["l"] < 1 or t["r"] < 1): tags.append("△빠듯")
         if b["lines"] > LIMIT_LINES - 1: tags.append("★줄수초과")
         if b["dense"]: tags.append("★뭉친칸%d" % len(b["dense"]))
+        ar = find_arrows(px, T) if T else []
+        if ar: tags.append("★화살표오배치" + "".join("%s@x%d" % (k, x) for k, y, x in ar))
         exp = resid = ""
         if n in cen:
             # 화면 칸 수 ≈ 글자 + 아이콘 + 줄수 (멀쩡한 롬에서 잰 관계, 잔차 -5~+3)
