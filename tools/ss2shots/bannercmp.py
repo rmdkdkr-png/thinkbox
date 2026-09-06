@@ -39,8 +39,8 @@ def best(dump, rom, lo, hi):
 if __name__ == "__main__":
     A = os.path.expanduser("~/ss2/tmp/vrALL"); RA = open(os.path.expanduser(
         "~/ss2/work_lang/v10/release_final/banners_v1.ngc"), "rb").read()
-    L = os.path.expanduser("~/ss2/tmp/vrLEN"); RL = open(os.path.expanduser(
-        "~/ss2/work_lang/v10/release_final/test_lenchg.ngc"), "rb").read()
+    L = os.path.expanduser(os.environ.get("BC_B","~/ss2/tmp/vrLEN")); RL = open(os.path.expanduser(
+        os.environ.get("BC_ROM","~/ss2/work_lang/v10/release_final/test_lenchg.ngc")), "rb").read()
     for name, (lo, hi) in REG.items():
         ta, ma = best(A, RA, lo, hi)
         tb, mb = best(L, RL, lo, hi)
