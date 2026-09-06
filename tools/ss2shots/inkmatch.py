@@ -20,8 +20,13 @@ def run(art, ppm, x0, y0):
         if a[i] != TRANS: pair[a[i]][s[i]] += 1
     m = {c: cc.most_common(1)[0][0] for c, cc in pair.items()}
     ink = set(m.values())
-    if len(ink) != len(m):
-        print("   ⚠ 시안 농담 %d 가지가 화면 색 %d 가지로 뭉쳤다" % (len(m), len(ink)))
+    # ★ 배너가 «번쩍이는» 프레임이 있다(뜰 때 한 색으로 하얘진다). 그 프레임에서 재면
+    #   농담이 전부 한 색으로 뭉쳐 「농담 어긋남 0」이 **거짓으로 통과**한다.
+    #   그래서 뭉친 것은 통과가 아니라 **못 잰 것**으로 소리 내어 알린다.
+    flat = len(ink) != len(m)
+    if flat:
+        print("   ⚠⚠ 농담을 **못 쟀다** — 시안 농담 %d 가지가 화면 색 %d 가지로 뭉쳤다."
+              " 배너가 번쩍이는 순간이다. **다른 프레임에서 다시 재라.**" % (len(m), len(ink)))
     miss_pos = miss_shade = 0
     cells = collections.Counter()
     for i in range(len(a)):
@@ -35,8 +40,9 @@ def run(art, ppm, x0, y0):
     n_ink = sum(1 for c in a if c != TRANS)
     cols, rows = W // 8, H // 8
     print("%s ← %s  (x=%d y=%d)" % (os.path.basename(art), os.path.basename(ppm), x0, y0))
-    print("   잉크 화소 %d개 · 자리 어긋남 %d · 농담 어긋남 %d · **맞은 화소 %d/%d**"
-          % (n_ink, miss_pos, miss_shade, W * H - miss_pos - miss_shade, W * H))
+    print("   잉크 화소 %d개 · 자리 어긋남 %d · 농담 %s · **맞은 화소 %d/%d**"
+          % (n_ink, miss_pos, "못 잼(번쩍임)" if flat else "어긋남 %d" % miss_shade,
+             W * H - miss_pos - miss_shade, W * H))
     print("   칸 %d개 중 «시안 그대로» %d개" % (cols * rows, cols * rows - len(cells)))
     for (cy, cx), k in sorted(cells.items())[:8]:
         print("      어긋난 칸 (행%d, 열%d) — %d/64" % (cy, cx, k))
