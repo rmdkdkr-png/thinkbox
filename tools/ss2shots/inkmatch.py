@@ -12,6 +12,8 @@ TRANS = (0, 0, 0)   # 시안의 투명색
 
 
 def run(art, ppm, x0, y0):
+    import stamp
+    stamp.head("잉크 대조", 시안=art, 화면=ppm)      # ★ 무엇을 쟀는지 먼저 찍는다
     W, H, a = readpng(os.path.expanduser(art))
     s = screen_crop(os.path.expanduser(ppm), x0, y0, W, H)
     # 시안 잉크색 → 화면색 짝 (잉크 화소만 모은다)
